@@ -124,11 +124,34 @@ namespace NoteApp.Views
 
         private void AddNotebook_Click(object sender, RoutedEventArgs e)
         {
-            var nb = new Notebook { Name = $"Notizbuch {_notebooks.Count + 1}" };
+            // 1. Nach Name fragen
+            var dlg = new RenameDialog("Neues Notizbuch") { Owner = this };
+            dlg.Title = "Notizbuch erstellen";
+            if (dlg.ShowDialog() != true) return;
+
+            // 2. Pfad wählen
+            var folderDialog = new OpenFolderDialog
+            {
+                Title = $"Speicherpfad für '{dlg.NewName}' wählen"
+            };
+            if (folderDialog.ShowDialog() != true) return;
+
+            // 3. Notizbuch erstellen
+            var nb = new Notebook
+            {
+                Name = dlg.NewName,
+                SavePath = folderDialog.FolderName
+            };
             _notebooks.Add(nb);
             SaveData();
             RefreshNotebookList();
             SelectNotebook(nb);
+
+            MessageBox.Show(
+                $"Notizbuch \"{nb.Name}\" wurde erstellt.\nSpeicherpfad: {nb.SavePath}",
+                "Notizbuch erstellt",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
         }
 
         private void Notebook_Click(object sender, MouseButtonEventArgs e)
@@ -157,6 +180,118 @@ namespace NoteApp.Views
             CategoryHeader.Text = $"📂  {nb.Name}";
             RefreshCategoryTree();
             ClearCanvas();
+        }
+        
+        // ── Notizbuch: Speicherort ändern ─────────────────────────────
+        private void ChangeNotebookPath_Click(object sender, RoutedEventArgs e)
+        {
+            var nb = GetNotebookFromSender(sender);
+            if (nb == null) return;
+
+            var dialog = new OpenFolderDialog
+            {
+                Title = $"Neuer Speicherpfad für '{nb.Name}'"
+            };
+            if (dialog.ShowDialog() != true) return;
+
+            nb.SavePath = dialog.FolderName;
+            SaveData();
+
+            MessageBox.Show(
+                $"Speicherort geändert:\n{nb.SavePath}",
+                "Gespeichert",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+
+        // ── Notizbuch: Löschen ────────────────────────────────────────
+        private void DeleteNotebook_Click(object sender, RoutedEventArgs e)
+        {
+            var nb = GetNotebookFromSender(sender);
+            if (nb == null) return;
+
+            var result = MessageBox.Show(
+                $"Notizbuch \"{nb.Name}\" wirklich löschen?\nDieser Vorgang kann nicht rückgängig gemacht werden.",
+                "Löschen bestätigen",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes) return;
+
+            _notebooks.Remove(nb);
+            if (_activeNotebook == nb)
+            {
+                _activeNotebook = null;
+                _activeCategory = null;
+                _activePage = null;
+            }
+            SaveData();
+            RefreshNotebookList();
+            RefreshCategoryTree();
+        }
+
+        // ── Kategorie: Umbenennen ─────────────────────────────────────
+        private void RenameCategory_Click(object sender, RoutedEventArgs e)
+        {
+            var cat = GetCategoryFromSender(sender);
+            if (cat == null) return;
+
+            var dlg = new RenameDialog(cat.Name) { Owner = this };
+            dlg.Title = "Kategorie umbenennen";
+            if (dlg.ShowDialog() != true) return;
+
+            cat.Name = dlg.NewName;
+            SaveData();
+            RefreshCategoryTree();
+        }
+
+        // ── Kategorie: Löschen ────────────────────────────────────────
+        private void DeleteCategory_Click(object sender, RoutedEventArgs e)
+        {
+            var cat = GetCategoryFromSender(sender);
+            if (cat == null) return;
+
+            var result = MessageBox.Show(
+                $"Kategorie \"{cat.Name}\" und alle Unterkategorien wirklich löschen?",
+                "Löschen bestätigen",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes) return;
+
+            // In Hauptkategorien suchen
+            if (_activeNotebook!.Categories.Remove(cat))
+            {
+                if (_activeCategory == cat) _activeCategory = null;
+                SaveData();
+                RefreshCategoryTree();
+                return;
+            }
+
+            // In Unterkategorien suchen
+            foreach (var parent in _activeNotebook.Categories)
+            {
+                if (parent.SubCategories.Remove(cat))
+                {
+                    if (_activeCategory == cat) _activeCategory = null;
+                    SaveData();
+                    RefreshCategoryTree();
+                    return;
+                }
+            }
+        }
+
+        // ── Hilfsmethoden ─────────────────────────────────────────────
+        private Notebook? GetNotebookFromSender(object sender)
+        {
+            if (sender is MenuItem mi && mi.Tag is Notebook nb) return nb;
+            return null;
+        }
+
+        private Category? GetCategoryFromSender(object sender)
+        {
+            if (sender is MenuItem mi && mi.Tag is Category cat) return cat;
+            return null;
         }
 
         // ── Category Tree ──────────────────────────────────────────────────
@@ -222,11 +357,23 @@ namespace NoteApp.Views
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
-            var cat = new Category { Name = $"Kategorie {_activeNotebook.Categories.Count + 1}" };
+
+            var dlg = new RenameDialog("Neue Kategorie") { Owner = this };
+            dlg.Title = "Kategorie erstellen";
+            if (dlg.ShowDialog() != true) return;
+
+            var cat = new Category { Name = dlg.NewName };
             _activeNotebook.Categories.Add(cat);
             SaveData();
             RefreshCategoryTree();
+
+            MessageBox.Show(
+                $"Kategorie \"{cat.Name}\" wurde erstellt.",
+                "Kategorie erstellt",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
         }
+
 
         private void AddSubCategory_Click(object sender, RoutedEventArgs e)
         {
@@ -236,10 +383,21 @@ namespace NoteApp.Views
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
-            var sub = new Category { Name = $"Unterkategorie {_activeCategory.SubCategories.Count + 1}" };
+
+            var dlg = new RenameDialog("Neue Unterkategorie") { Owner = this };
+            dlg.Title = "Unterkategorie erstellen";
+            if (dlg.ShowDialog() != true) return;
+
+            var sub = new Category { Name = dlg.NewName };
             _activeCategory.SubCategories.Add(sub);
             SaveData();
             RefreshCategoryTree();
+
+            MessageBox.Show(
+                $"Unterkategorie \"{sub.Name}\" wurde erstellt.",
+                "Unterkategorie erstellt",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
         }
 
         private void RenameCategory(Category cat)

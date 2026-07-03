@@ -42,3 +42,4 @@ C:\Users\bbran\Documents\Brandlcloud\10_Programmieren\NoteApp\NoteApp\obj\Debug\
 C:\Users\bbran\Documents\Brandlcloud\10_Programmieren\NoteApp\NoteApp\obj\Debug\net8.0-windows\NoteApp.pdb
 C:\Users\bbran\Documents\Brandlcloud\10_Programmieren\NoteApp\NoteApp\obj\Debug\net8.0-windows\NoteApp.genruntimeconfig.cache
 C:\Users\bbran\Documents\Brandlcloud\10_Programmieren\NoteApp\NoteApp\obj\Debug\net8.0-windows\ref\NoteApp.dll
+C:\Users\bbran\Documents\Brandlcloud\10_Programmieren\NoteApp\NoteApp\obj\Debug\net8.0-windows\NoteApp.sourcelink.json
