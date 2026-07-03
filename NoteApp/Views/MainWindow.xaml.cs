@@ -56,6 +56,7 @@ namespace NoteApp.Views
             StartAutoSaveTimer();
             RefreshNotebookList();
             SetupInkCanvas();
+            Loaded += (s, e) => UpdateCanvasWidth();
         }
 
         // ── Setup ──────────────────────────────────────────────────────────
@@ -848,8 +849,141 @@ namespace NoteApp.Views
             SaveCurrentPageStrokes();
             base.OnClosing(e);
         }
-    }
-
         
+        // ═══════════════════════════════════════════════════════
+        // VOLLBILD / SIDEBAR-TOGGLE
+        // ═══════════════════════════════════════════════════════
 
+        private bool _sidebarVisible = true;
+
+        /// <summary>
+        /// Blendet die beiden Seitenleisten-Spalten ein oder aus.
+        /// Im ausgeblendeten Zustand erscheint der Hamburger-Button.
+        /// </summary>
+        private void ToggleSidebar_Click(object sender, RoutedEventArgs e)
+        {
+            _sidebarVisible = !_sidebarVisible;
+            SetSidebarVisibility(_sidebarVisible);
+        }
+
+        private void SetSidebarVisibility(bool visible)
+        {
+            if (visible)
+            {
+            // Spalten wieder einblenden
+            ColNotebooks.Width = new GridLength(200);
+            ColSplitter1.Width = new GridLength(4);
+            ColCategories.Width = new GridLength(220);
+            ColSplitter2.Width = new GridLength(4);
+
+                      
+                NotebookPanel.Visibility = Visibility.Visible;
+                CategoryPanel.Visibility = Visibility.Visible;
+                Splitter1.Visibility     = Visibility.Visible;
+                Splitter2.Visibility     = Visibility.Visible;
+
+                HamburgerButton.Visibility    = Visibility.Collapsed;
+                ToggleSidebarButton.Content   = "◀◀ Ausblenden";
+            }
+            else
+            {
+                // Spalten auf 0 setzen → Seitenleisten verschwinden
+                ColNotebooks.Width  = new GridLength(0);
+                ColSplitter1.Width  = new GridLength(0);
+                ColCategories.Width = new GridLength(0);
+                ColSplitter2.Width  = new GridLength(0);
+
+                NotebookPanel.Visibility = Visibility.Collapsed;
+                CategoryPanel.Visibility = Visibility.Collapsed;
+                Splitter1.Visibility     = Visibility.Collapsed;
+                Splitter2.Visibility     = Visibility.Collapsed;
+
+                HamburgerButton.Visibility  = Visibility.Visible;
+                ToggleSidebarButton.Content = "▶▶ Einblenden";
+
+                // Popup schließen, falls offen
+                SidebarPopup.IsOpen = false;
+            }
+        }
+
+        /// <summary>
+        /// Hamburger-Button: öffnet/schließt das Popup mit Notizbüchern & Kategorien.
+        /// </summary>
+        private void HamburgerButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Popup-Listen synchronisieren
+            PopupNotebookList.ItemsSource = NotebookList.ItemsSource;
+            SyncPopupCategoryTree();
+
+                      
+            SidebarPopup.IsOpen = !SidebarPopup.IsOpen;
+        }
+
+        /// <summary>
+        /// Synchronisiert den Kategorie-TreeView im Popup mit dem Haupt-TreeView.
+        /// </summary>
+        private void SyncPopupCategoryTree()
+        {
+            PopupCategoryTree.ItemsSource = CategoryTree.ItemsSource;
+        }
+
+        /// <summary>
+        /// Klick auf ein Notizbuch im Popup → gleiche Logik wie Hauptliste.
+        /// </summary>
+        private void PopupNotebook_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is Border border && border.Tag is Notebook nb)
+            {
+            // Gleiche Logik wie Notebook_Click aufrufen
+            Notebook_Click(sender, e);
+            SyncPopupCategoryTree();
+            }
+        }
+
+        /// <summary>
+        /// Kategorie im Popup ausgewählt → Popup schließen und Seite laden.
+        /// </summary>
+        private void PopupCategoryTree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            // Selektion an den Haupt-TreeView weitergeben
+            CategoryTree_SelectedItemChanged(sender, e);
+            // Popup nach Auswahl schließen
+            SidebarPopup.IsOpen = false;
+        }
+
+        // ═══════════════════════════════════════════════════════
+        // VOLLE BREITE: Canvas passt sich dem Fenster an
+        // ═══════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Wird aufgerufen wenn der ScrollViewer seine Größe ändert.
+        /// Passt InkCanvas, LineCanvas und PageBorder auf die verfügbare Breite an.
+        /// </summary>
+        private void CanvasScroller_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            UpdateCanvasWidth();
+        }
+
+        private void UpdateCanvasWidth()
+        {
+            if (CanvasScroller.ActualWidth <= 0) return;
+
+                      
+            // Verfügbare Breite minus Margin (2 × 40px)
+            double availableWidth = Math.Max(200, CanvasScroller.ActualWidth - 80);
+
+            PageBorder.Width    = availableWidth;
+            LineCanvas.Width    = availableWidth;
+            MainInkCanvas.Width = availableWidth;
+
+            // Höhe: DIN-A4-Seitenverhältnis (1:√2) beibehalten
+            double pageHeight = availableWidth * (1123.0 / 794.0);
+            PageBorder.Height    = pageHeight;
+            LineCanvas.Height    = pageHeight;
+            MainInkCanvas.Height = pageHeight;
+
+            // Linien neu zeichnen (falls vorhanden)
+            DrawPageLines();
+        }
+    }
 }
