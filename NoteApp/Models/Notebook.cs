@@ -4,15 +4,17 @@ using System.Runtime.CompilerServices;
 
 namespace NoteApp.Models
 {
-public class Notebook : INotifyPropertyChanged
-{
-    private string _name = "Neues Notizbuch";
-    public string Name
+    public class Notebook : INotifyPropertyChanged
     {
-    get => _name;
-    set { _name = value; OnPropertyChanged(); }
-    }
+        private string _name = "Neues Notizbuch";
+        public string Name
+        {
+            get => _name;
+            set { _name = value; OnPropertyChanged(); }
+        }
 
+        // Benutzerdefinierter Speicherpfad
+        public string? SavePath { get; set; }
               
         public ObservableCollection<Category> Categories { get; set; } = new();
 

@@ -35,6 +35,8 @@ namespace NoteApp.Views
             Colors.DarkGreen, Colors.Purple, Colors.DarkOrange,
             Colors.White, Colors.Gray
         };
+        
+        private System.Windows.Threading.DispatcherTimer? _autoSaveTimer;
 
         // ── Constructor ────────────────────────────────────────────────────
         public MainWindow()
@@ -51,6 +53,7 @@ namespace NoteApp.Views
 
             BuildColorPalette();
             LoadData();
+            StartAutoSaveTimer();
             RefreshNotebookList();
             SetupInkCanvas();
         }
@@ -578,6 +581,63 @@ namespace NoteApp.Views
                 FitToCurve = true,
                 StylusTip = StylusTip.Ellipse
             };
+        }
+        
+        // ── Auto-Save Timer ──────────────────────────────────────────
+        private void StartAutoSaveTimer()
+        {
+            _autoSaveTimer = new System.Windows.Threading.DispatcherTimer();
+            _autoSaveTimer.Interval = TimeSpan.FromMinutes(10);
+            _autoSaveTimer.Tick += AutoSaveTimer_Tick;
+            _autoSaveTimer.Start();
+        }
+
+        private void AutoSaveTimer_Tick(object? sender, EventArgs e)
+        {
+            foreach (var notebook in _notebooks)
+            {
+                PdfService.AutoSaveNotebook(notebook);
+            }
+        }
+
+        // ── Pfad für Notizbuch wählen ─────────────────────────────────
+        private void SetNotebookPath_Click(object sender, RoutedEventArgs e)
+        {
+            if (_activeNotebook  == null) return;
+
+            // OpenFolderDialog ist ab .NET 8 in WPF nativ verfügbar
+            var dialog = new OpenFolderDialog
+            {
+                Title = $"Speicherpfad für '{_activeNotebook .Name}' wählen"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                _activeNotebook .SavePath = dialog.FolderName;
+                SaveData();
+                MessageBox.Show(
+                    $"Pfad gesetzt:\n{dialog.FolderName}",
+                    "Gespeichert",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+        }
+
+        // ── Manueller Export ──────────────────────────────────────────
+        private void ManualSaveAll_Click(object sender, RoutedEventArgs e)
+        {
+            if (_activeNotebook  == null) return;
+
+            if (string.IsNullOrWhiteSpace(_activeNotebook .SavePath))
+            {
+                MessageBox.Show("Bitte zuerst einen Speicherpfad für dieses Notizbuch festlegen.",
+                    "Kein Pfad", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            PdfService.AutoSaveNotebook(_activeNotebook );
+            MessageBox.Show("Alle Seiten wurden gespeichert!", "Gespeichert",
+                MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         // ── Export ─────────────────────────────────────────────────────────

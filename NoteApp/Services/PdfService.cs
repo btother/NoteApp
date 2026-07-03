@@ -2,20 +2,19 @@ using PdfSharp.Drawing;
 using PdfSharp.Pdf;
 using NoteApp.Models;
 using System.IO;
-using System.Windows.Ink;
 using System.Windows.Media;
 
 namespace NoteApp.Services
 {
-public static class PdfService
-{
-    // A4 in Punkten (72 dpi): 595 x 842
-    private const double PageWidth = 595;
-    private const double PageHeight = 842;
-    private const double MarginLeft = 60;
-    private const double MarginTop = 40;
-    private const double MarginRight = 40;
-    private const double LineSpacing = 24;
+    public static class PdfService
+    {
+        // A4 in Punkten (72 dpi): 595 x 842
+        private const double PageWidth = 595;
+        private const double PageHeight = 842;
+        private const double MarginLeft = 60;
+        private const double MarginTop = 40;
+        private const double MarginRight = 40;
+        private const double LineSpacing = 24;
 
               
         /// <summary>
@@ -27,10 +26,8 @@ public static class PdfService
             var page = doc.AddPage();
             page.Width = XUnit.FromPoint(PageWidth);
             page.Height = XUnit.FromPoint(PageHeight);
-
             using var gfx = XGraphics.FromPdfPage(page);
             DrawLinedBackground(gfx);
-
             doc.Save(savePath);
             return savePath;
         }
@@ -66,7 +63,6 @@ public static class PdfService
             var pdfPage = doc.AddPage();
             pdfPage.Width = XUnit.FromPoint(PageWidth);
             pdfPage.Height = XUnit.FromPoint(PageHeight);
-
             using var gfx = XGraphics.FromPdfPage(pdfPage);
             DrawLinedBackground(gfx);
 
@@ -87,6 +83,64 @@ public static class PdfService
             }
 
             doc.Save(exportPath);
+        }
+
+        /// <summary>
+        /// Speichert alle Seiten eines Notizbuchs automatisch als PDFs.
+        /// Ordnerstruktur: SavePath/NotebookName/KategorieName/Kategorie_Seite.pdf
+        /// </summary>
+        public static void AutoSaveNotebook(Notebook notebook)
+        {
+            if (string.IsNullOrWhiteSpace(notebook.SavePath)) return;
+
+            // Wurzelordner: SavePath/NotebookName
+            string notebookDir = Path.Combine(
+                notebook.SavePath,
+                SanitizeName(notebook.Name));
+            Directory.CreateDirectory(notebookDir);
+
+            // Alle Kategorien (inkl. Unterkategorien) durchlaufen
+            foreach (var category in notebook.Categories)
+            {
+                SaveCategoryPages(category, notebookDir, category.Name);
+            }
+        }
+
+        /// <summary>
+        /// Rekursiv Kategorien und Unterkategorien speichern.
+        /// </summary>
+        private static void SaveCategoryPages(Category category, string parentDir, string prefix)
+        {
+            // Ordner für diese Kategorie: ParentDir/Prefix_KategorieName
+            string categoryDir = Path.Combine(parentDir, SanitizeName(category.Name));
+            Directory.CreateDirectory(categoryDir);
+
+            // Seiten dieser Kategorie speichern
+            foreach (var page in category.Pages)
+            {
+                // Dateiname: Prefix_SeitenName.pdf
+                // z.B. BPE1_TK01_Thema1.pdf
+                string fileName = $"{SanitizeName(prefix)}_{SanitizeName(page.Name)}.pdf";
+                string filePath = Path.Combine(categoryDir, fileName);
+
+                ExportPageWithStrokes(page, filePath);
+            }
+
+            // Unterkategorien rekursiv verarbeiten
+            foreach (var sub in category.SubCategories)
+            {
+                SaveCategoryPages(sub, categoryDir, $"{prefix}_{sub.Name}");
+            }
+        }
+
+        /// <summary>
+        /// Bereinigt einen Namen für die Verwendung als Datei-/Ordnername.
+        /// </summary>
+        private static string SanitizeName(string name)
+        {
+            foreach (char c in Path.GetInvalidFileNameChars())
+                name = name.Replace(c, '_');
+            return name.Trim();
         }
     }
 
