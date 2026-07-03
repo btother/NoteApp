@@ -149,6 +149,7 @@ namespace NoteApp.Views {
         }
 
         private void SelectNotebook(Notebook nb) {
+            SaveCurrentPageStrokes();
             _activeNotebook = nb;
             CategoryHeader.Text = $"\U0001f4c2 {nb.Name}";
             RefreshCategoryTree();
@@ -286,6 +287,7 @@ namespace NoteApp.Views {
 
         private void CategoryTree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e) {
             if (CategoryTree.SelectedItem is TreeViewItem tvi && tvi.Tag is Category cat) {
+                SaveCurrentPageStrokes();
                 _activeCategory = cat;
                 RefreshPageTabs();
             }
@@ -646,12 +648,13 @@ namespace NoteApp.Views {
         // ── Auto-Save Timer ────────────────────────────────────────────────
         private void StartAutoSaveTimer() {
             _autoSaveTimer = new System.Windows.Threading.DispatcherTimer();
-            _autoSaveTimer.Interval = TimeSpan.FromMinutes(10);
+            _autoSaveTimer.Interval = TimeSpan.FromMinutes(1);
             _autoSaveTimer.Tick += AutoSaveTimer_Tick;
             _autoSaveTimer.Start();
         }
 
         private void AutoSaveTimer_Tick(object? sender, EventArgs e) {
+            SaveCurrentPageStrokes(); // ← NEU: aktuelle Strokes in JSON schreiben
             foreach (var notebook in _notebooks)
                 PdfService.AutoSaveNotebook(notebook);
         }
