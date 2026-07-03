@@ -446,11 +446,22 @@ namespace NoteApp.Views
                 PageTabPanel.Children.Add(tab);
             }
 
-            // Erste Seite automatisch auswählen
+            // ✅ FIX: Direkt LoadPage aufrufen statt SelectPage,
+            //         um die Rekursion zu vermeiden
             if (_activeCategory.Pages.Count > 0)
-                SelectPage(_activeCategory.Pages[0]);
+            {
+                // Wenn noch keine Seite aktiv ist, erste Seite wählen
+                if (_activePage == null || !_activeCategory.Pages.Contains(_activePage))
+                {
+                    _activePage = _activeCategory.Pages[0];
+                }
+                LoadPage(_activePage);
+            }
             else
+            {
+                _activePage = null;
                 ClearCanvas();
+            }
         }
 
         private Border CreatePageTab(NotePage page)
@@ -505,7 +516,7 @@ namespace NoteApp.Views
         {
             SaveCurrentPageStrokes();
             _activePage = page;
-            RefreshPageTabs();
+            RefreshPageTabs();  // Tabs neu zeichnen (aktiver Tab wird hervorgehoben)
             LoadPage(page);
         }
 
