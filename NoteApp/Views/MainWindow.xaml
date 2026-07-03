@@ -1,0 +1,340 @@
+<Window x:Class="NoteApp.Views.MainWindow"
+xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+xmlns:conv="clr-namespace:NoteApp.Converters"
+xmlns:models="clr-namespace:NoteApp.Models"
+Title="NoteApp" Height="800" Width="1280"
+MinHeight="600" MinWidth="900"
+Background="#1E1E2E"
+WindowStartupLocation="CenterScreen">
+
+          
+    <Window.Resources>
+        <conv:NullToVisibilityConverter x:Key="NullToVis"/>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" MinWidth="150" MaxWidth="300"/>
+            <ColumnDefinition Width="4"/>
+            <ColumnDefinition Width="220" MinWidth="160" MaxWidth="320"/>
+            <ColumnDefinition Width="4"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ===== SIDEBAR: NOTIZBÜCHER ===== -->
+        <Grid Grid.Column="0" Background="#1E1E2E">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="56"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Background="#252535" BorderBrush="#3A3A55" BorderThickness="0,0,0,1">
+                <TextBlock Text="📓  Notizbücher"
+                           Foreground="#E0E0F0"
+                           FontSize="14" FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           Margin="16,0"/>
+            </Border>
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <ItemsControl x:Name="NotebookList" Margin="8,8,8,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border x:Name="NbBorder"
+                                    CornerRadius="6"
+                                    Padding="10,8"
+                                    Margin="0,2"
+                                    Cursor="Hand"
+                                    MouseLeftButtonDown="Notebook_Click"
+                                    Tag="{Binding}">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#2E2E45"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Name}"
+                                               Foreground="#E0E0F0"
+                                               FontSize="13"
+                                               TextTrimming="CharacterEllipsis"
+                                               VerticalAlignment="Center"/>
+                                    <Button Grid.Column="1"
+                                            Content="✏"
+                                            Style="{StaticResource GhostButton}"
+                                            FontSize="11"
+                                            Padding="4,2"
+                                            Tag="{Binding}"
+                                            Click="RenameNotebook_Click"
+                                            x:Name="RenameBtn"
+                                            Visibility="Hidden"/>
+                                </Grid>
+                            </Border>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding IsMouseOver, ElementName=NbBorder}" Value="True">
+                                    <Setter TargetName="RenameBtn" Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <Button Grid.Row="2"
+                    Content="+ Notizbuch"
+                    Style="{StaticResource ModernButton}"
+                    Margin="8,8"
+                    Click="AddNotebook_Click"/>
+        </Grid>
+
+        <!-- Splitter 1 -->
+        <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch" Background="#3A3A55"/>
+
+        <!-- ===== SIDEBAR: KATEGORIEN ===== -->
+        <Grid Grid.Column="2" Background="#252535">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="56"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Background="#252535" BorderBrush="#3A3A55" BorderThickness="0,0,0,1">
+                <TextBlock x:Name="CategoryHeader"
+                           Text="📂  Kategorien"
+                           Foreground="#E0E0F0"
+                           FontSize="14" FontWeight="SemiBold"
+                           VerticalAlignment="Center"
+                           Margin="16,0"/>
+            </Border>
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <TreeView x:Name="CategoryTree"
+                          Margin="8,8,8,0"
+                          SelectedItemChanged="CategoryTree_SelectedItemChanged"
+                          Background="Transparent"
+                          BorderThickness="0">
+                    <TreeView.Resources>
+                        <HierarchicalDataTemplate DataType="{x:Type models:Category}"
+                                                  ItemsSource="{Binding SubCategories}">
+                            <StackPanel Orientation="Horizontal" Margin="2,1">
+                                <TextBlock Text="📁 " FontSize="12"/>
+                                <TextBlock Text="{Binding Name}" FontSize="12" Foreground="#E0E0F0"/>
+                            </StackPanel>
+                        </HierarchicalDataTemplate>
+                    </TreeView.Resources>
+                </TreeView>
+            </ScrollViewer>
+
+            <StackPanel Grid.Row="2" Margin="8,4,8,8">
+                <Button Content="+ Kategorie"
+                        Style="{StaticResource ModernButton}"
+                        Margin="0,2"
+                        Click="AddCategory_Click"/>
+                <Button Content="+ Unterkategorie"
+                        Style="{StaticResource GhostButton}"
+                        Margin="0,2"
+                        Foreground="#9090B0"
+                        Click="AddSubCategory_Click"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Splitter 2 -->
+        <GridSplitter Grid.Column="3" Width="4" HorizontalAlignment="Stretch" Background="#3A3A55"/>
+
+        <!-- ===== HAUPTBEREICH ===== -->
+        <Grid Grid.Column="4" Background="#1E1E2E">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="56"/>
+                <RowDefinition Height="44"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Toolbar -->
+            <Border Grid.Row="0" Background="#252535" BorderBrush="#3A3A55" BorderThickness="0,0,0,1">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0">
+
+                    <ToggleButton x:Name="PenTool"
+                                  Content="✏ Stift"
+                                  Checked="PenTool_Checked"
+                                  Unchecked="PenTool_Unchecked"
+                                  Margin="0,0,6,0"
+                                  Padding="10,6"
+                                  Cursor="Hand"
+                                  FontSize="13">
+                        <ToggleButton.Style>
+                            <Style TargetType="ToggleButton">
+                                <Setter Property="Background" Value="#2E2E45"/>
+                                <Setter Property="Foreground" Value="#9090B0"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ToggleButton">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    CornerRadius="6"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsChecked" Value="True">
+                                        <Setter Property="Background" Value="#7C6AF7"/>
+                                        <Setter Property="Foreground" Value="#E0E0F0"/>
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#3D3A6B"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ToggleButton.Style>
+                    </ToggleButton>
+
+                    <ToggleButton x:Name="EraserTool"
+                                  Content="⬜ Radierer"
+                                  Checked="EraserTool_Checked"
+                                  Unchecked="EraserTool_Unchecked"
+                                  Margin="0,0,6,0"
+                                  Padding="10,6"
+                                  Cursor="Hand"
+                                  FontSize="13">
+                        <ToggleButton.Style>
+                            <Style TargetType="ToggleButton">
+                                <Setter Property="Background" Value="#2E2E45"/>
+                                <Setter Property="Foreground" Value="#9090B0"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ToggleButton">
+                                            <Border Background="{TemplateBinding Background}"
+                                                    CornerRadius="6"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center"
+                                                                  VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsChecked" Value="True">
+                                        <Setter Property="Background" Value="#7C6AF7"/>
+                                        <Setter Property="Foreground" Value="#E0E0F0"/>
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#3D3A6B"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ToggleButton.Style>
+                    </ToggleButton>
+
+                    <!-- Stiftdicke -->
+                    <TextBlock Text="Dicke:" Foreground="#9090B0" FontSize="12"
+                               VerticalAlignment="Center" Margin="8,0,4,0"/>
+                    <Slider x:Name="PenThickness"
+                            Minimum="1" Maximum="20" Value="3"
+                            Width="80" VerticalAlignment="Center"
+                            Margin="0,0,8,0"
+                            ValueChanged="PenThickness_ValueChanged"/>
+
+                    <!-- Farbe -->
+                    <TextBlock Text="Farbe:" Foreground="#9090B0" FontSize="12"
+                               VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <ItemsControl x:Name="ColorPicker" VerticalAlignment="Center" Margin="0,0,12,0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+
+                    <Separator Background="#3A3A55" Width="1" Margin="4,8"/>
+
+                    <Button Content="+ Seite"
+                            Style="{StaticResource ModernButton}"
+                            Margin="8,0,4,0"
+                            Click="AddPage_Click"/>
+                    <Button Content="📄 PDF importieren"
+                            Style="{StaticResource GhostButton}"
+                            Margin="4,0"
+                            Click="ImportPdf_Click"/>
+                    <Button Content="💾 Exportieren"
+                            Style="{StaticResource GhostButton}"
+                            Margin="4,0"
+                            Click="ExportPdf_Click"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Page Tabs -->
+            <Border Grid.Row="1" Background="#252535" BorderBrush="#3A3A55" BorderThickness="0,0,0,1">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden">
+                    <StackPanel x:Name="PageTabPanel"
+                                Orientation="Horizontal"
+                                Margin="8,0"
+                                VerticalAlignment="Center"/>
+                </ScrollViewer>
+            </Border>
+
+            <!-- Canvas / Zeichenbereich -->
+            <Grid Grid.Row="2">
+                <!-- Placeholder -->
+                <StackPanel x:Name="PlaceholderPanel"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Center">
+                    <TextBlock Text="📓" FontSize="64" HorizontalAlignment="Center" Opacity="0.2"/>
+                    <TextBlock Text="Wähle ein Notizbuch und eine Kategorie aus"
+                               Foreground="#9090B0" FontSize="16"
+                               HorizontalAlignment="Center" Margin="0,12,0,0"/>
+                    <TextBlock Text="oder erstelle eine neue Seite"
+                               Foreground="#3A3A55" FontSize="13"
+                               HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <!-- Zeichenbereich -->
+                <ScrollViewer x:Name="CanvasScroller"
+                              HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Auto"
+                              Visibility="Collapsed"
+                              Background="#2A2A3E">
+                    <Grid HorizontalAlignment="Center" Margin="40">
+                        <!-- Seitenhintergrund -->
+                        <Border Width="794" Height="1123"
+                                Background="White">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#000000" Opacity="0.4"
+                                                  BlurRadius="20" ShadowDepth="4"/>
+                            </Border.Effect>
+                        </Border>
+
+                        <!-- Linierter Hintergrund -->
+                        <Canvas x:Name="LineCanvas"
+                                Width="794" Height="1123"
+                                IsHitTestVisible="False"/>
+
+                        <!-- InkCanvas für Handschrift -->
+                        <InkCanvas x:Name="MainInkCanvas"
+                                   Width="794" Height="1123"
+                                   Background="Transparent"
+                                   StrokeCollected="InkCanvas_StrokeCollected"
+                                   StrokeErased="InkCanvas_StrokeErased"/>
+                    </Grid>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+    </Grid>
+
+        
+
+</Window> 
