@@ -758,7 +758,7 @@ namespace NoteApp.Views {
                 Splitter2.Visibility = Visibility.Visible;
 
                 HamburgerButton.Visibility = Visibility.Collapsed;
-                ToggleSidebarButton.Content = "\u25c4\u25c4 Ausblenden";
+                ToggleSidebarButton.Content = "\u25c4\u25c4 Seitenleisten ausblenden";
             }
             else {
                 ColNotebooks.Width = new GridLength(0);
@@ -774,7 +774,7 @@ namespace NoteApp.Views {
                 Splitter2.Visibility = Visibility.Collapsed;
 
                 HamburgerButton.Visibility = Visibility.Visible;
-                ToggleSidebarButton.Content = "\u25ba\u25ba Einblenden";
+                ToggleSidebarButton.Content = "\u25ba\u25ba Seitenleisten einblenden";
 
                 SidebarPopup.IsOpen = false;
             }
@@ -788,21 +788,41 @@ namespace NoteApp.Views {
             SidebarPopup.IsOpen = !SidebarPopup.IsOpen;
         }
 
-        private TreeViewItem BuildPopupTreeItem(TreeViewItem original) {
-            var copy = new TreeViewItem {
-                Header = original.Header,
+        private TreeViewItem BuildPopupTreeItem(TreeViewItem original)
+        {
+            var cat = original.Tag as Category;
+
+            // ✅ FIX: Neuen Header aufbauen statt original.Header wiederverwenden
+            var header = new StackPanel { Orientation = Orientation.Horizontal };
+            header.Children.Add(new TextBlock { Text = "📁 ", FontSize = 12 });
+            header.Children.Add(new TextBlock
+            {
+                Text = cat?.Name ?? "?",
+                FontSize = 12,
+                Foreground = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xF0)),
+                VerticalAlignment = VerticalAlignment.Center
+            });
+
+            var copy = new TreeViewItem
+            {
+                Header = header,   // ← frisch erstellt, kein Konflikt
                 Tag = original.Tag,
                 IsExpanded = true
             };
-            copy.MouseLeftButtonUp += (s, e) => {
-                if (copy.Tag is Category cat) {
-                    _activeCategory = cat;
+
+            copy.MouseLeftButtonUp += (s, e) =>
+            {
+                if (copy.Tag is Category c)
+                {
+                    _activeCategory = c;
                     RefreshPageTabs();
                     SidebarPopup.IsOpen = false;
                 }
             };
+
             foreach (TreeViewItem child in original.Items)
                 copy.Items.Add(BuildPopupTreeItem(child));
+
             return copy;
         }
 

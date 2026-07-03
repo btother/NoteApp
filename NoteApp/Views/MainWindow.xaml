@@ -330,7 +330,7 @@
 
         <!-- Sidebar-Toggle -->
      <Button x:Name="ToggleSidebarButton"
-         Content="◀◀ Ausblenden"
+         Content="◀◀ Seitenleisten ausblenden"
        Style="{StaticResource GhostButton}"
                   Margin="4,0"
      ToolTip="Seitenleisten ein-/ausblenden"
