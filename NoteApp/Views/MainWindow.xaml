@@ -1,517 +1,511 @@
 <Window x:Class="NoteApp.Views.MainWindow"
-xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-xmlns:conv="clr-namespace:NoteApp.Converters"
-xmlns:models="clr-namespace:NoteApp.Models"
-Title="NoteApp"
-MinHeight="600" MinWidth="900"
-Background="#1E1E2E"
-WindowStartupLocation="CenterScreen"
-WindowState="Maximized">
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:conv="clr-namespace:NoteApp.Converters"
+        xmlns:models="clr-namespace:NoteApp.Models"
+        Title="NoteApp"
+        MinHeight="600" MinWidth="900"
+     Background="#1E1E2E"
+        WindowStartupLocation="CenterScreen"
+        WindowState="Maximized">
 
-          
     <Window.Resources>
-        <conv:NullToVisibilityConverter x:Key="NullToVis"/>
-        <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
+    <conv:NullToVisibilityConverter x:Key="NullToVis"/>
+     <conv:BoolToVisibilityConverter x:Key="BoolToVis"/>
     </Window.Resources>
 
     <!-- Root-Grid: Hamburger-Button liegt über allem -->
     <Grid>
 
-        <!-- ===== HAUPT-LAYOUT (Spalten) ===== -->
-        <Grid x:Name="MainGrid">
-            <Grid.ColumnDefinitions>
-                <!-- Spalte 0: Notizbücher (ein-/ausblendbar) -->
-                <ColumnDefinition x:Name="ColNotebooks" Width="200" MinWidth="150" MaxWidth="300"/>
-                <ColumnDefinition x:Name="ColSplitter1" Width="4"/>
-                <!-- Spalte 2: Kategorien (ein-/ausblendbar) -->
-                <ColumnDefinition x:Name="ColCategories" Width="220" MinWidth="160" MaxWidth="320"/>
-                <ColumnDefinition x:Name="ColSplitter2" Width="4"/>
-                <!-- Spalte 4: Hauptbereich -->
+   <!-- ===== HAUPT-LAYOUT (Spalten) ===== -->
+      <Grid x:Name="MainGrid">
+  <Grid.ColumnDefinitions>
+       <!-- Spalte 0: Notizbücher (ein-/ausblendbar) -->
+        <ColumnDefinition x:Name="ColNotebooks" Width="200" MinWidth="150" MaxWidth="300"/>
+    <ColumnDefinition x:Name="ColSplitter1" Width="4"/>
+    <!-- Spalte 2: Kategorien (ein-/ausblendbar) -->
+   <ColumnDefinition x:Name="ColCategories" Width="220" MinWidth="160" MaxWidth="320"/>
+      <ColumnDefinition x:Name="ColSplitter2" Width="4"/>
+       <!-- Spalte 4: Hauptbereich -->
                 <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+      </Grid.ColumnDefinitions>
 
-            <!-- ===== SIDEBAR: NOTIZBÜCHER ===== -->
-            <Grid x:Name="NotebookPanel" Grid.Column="0" Background="#1E1E2E">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="56"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+    <!-- ===== SIDEBAR: NOTIZBÜCHER ===== -->
+          <Grid x:Name="NotebookPanel" Grid.Column="0" Background="#1E1E2E">
+           <Grid.RowDefinitions>
+         <RowDefinition Height="56"/>
+         <RowDefinition Height="*"/>
+           <RowDefinition Height="Auto"/>
+     </Grid.RowDefinitions>
 
-                <Border Grid.Row="0" Background="#252535" BorderBrush="#3A3A55" BorderThickness="0,0,0,1">
+        <Border Grid.Row="0" Background="#252535" BorderBrush="#3A3A55" BorderThickness="0,0,0,1">
                     <TextBlock Text="📓 Notizbücher"
-                               Foreground="#E0E0F0"
-                               FontSize="14" FontWeight="SemiBold"
-                               VerticalAlignment="Center"
-                               Margin="16,0"/>
-                </Border>
+                 Foreground="#E0E0F0"
+         FontSize="14" FontWeight="SemiBold"
+   VerticalAlignment="Center"
+           Margin="16,0"/>
+   </Border>
 
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                    <ItemsControl x:Name="NotebookList" Margin="8,8,8,0">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border x:Name="NbBorder"
-                                        CornerRadius="6"
-                                        Padding="10,8"
-                                        Margin="0,2"
-                                        Cursor="Hand"
-                                        MouseLeftButtonDown="Notebook_Click"
-                                        Tag="{Binding}">
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Setter Property="Background" Value="Transparent"/>
-                                            <Style.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#2E2E45"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Border.Style>
-                                    <Border.ContextMenu>
-                                        <ContextMenu>
-                                            <MenuItem Header="✏ Umbenennen" Tag="{Binding}" Click="RenameNotebook_Click"/>
-                                            <MenuItem Header="📁 Speicherort ändern" Tag="{Binding}" Click="ChangeNotebookPath_Click"/>
-                                            <Separator/>
-                                            <MenuItem Header="+ Neues Notizbuch" Click="AddNotebook_Click"/>
-                                            <Separator/>
-                                            <MenuItem Header="🗑 Löschen" Tag="{Binding}" Click="DeleteNotebook_Click"/>
-                                        </ContextMenu>
-                                    </Border.ContextMenu>
-                                    <TextBlock Text="{Binding Name}"
-                                               Foreground="#E0E0F0"
-                                               FontSize="13"
-                                               TextTrimming="CharacterEllipsis"
-                                               VerticalAlignment="Center"/>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+       <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+   <ItemsControl x:Name="NotebookList" Margin="8,8,8,0">
+     <ItemsControl.ItemTemplate>
+      <DataTemplate>
+     <Border x:Name="NbBorder"
+   CornerRadius="6"
+       Padding="10,8"
+             Margin="0,2"
+   Cursor="Hand"
+         MouseLeftButtonDown="Notebook_Click"
+  Tag="{Binding}">
+            <Border.Style>
+         <Style TargetType="Border">
+    <Setter Property="Background" Value="Transparent"/>
+   <Style.Triggers>
+<Trigger Property="IsMouseOver" Value="True">
+         <Setter Property="Background" Value="#2E2E45"/>
+  </Trigger>
+         </Style.Triggers>
+               </Style>
+         </Border.Style>
+<Border.ContextMenu>
+        <ContextMenu>
+      <MenuItem Header="✏ Umbenennen" Tag="{Binding}" Click="RenameNotebook_Click"/>
+           <MenuItem Header="📁 Speicherort ändern" Tag="{Binding}" Click="ChangeNotebookPath_Click"/>
+              <Separator/>
+             <MenuItem Header="+ Neues Notizbuch" Click="AddNotebook_Click"/>
+           <Separator/>
+           <MenuItem Header="🗑 Löschen" Tag="{Binding}" Click="DeleteNotebook_Click"/>
+       </ContextMenu>
+     </Border.ContextMenu>
+    <TextBlock Text="{Binding Name}"
+            Foreground="#E0E0F0"
+    FontSize="13"
+            TextTrimming="CharacterEllipsis"
+     VerticalAlignment="Center"/>
+               </Border>
+             </DataTemplate>
+        </ItemsControl.ItemTemplate>
+               </ItemsControl>
                 </ScrollViewer>
 
-                <Button Grid.Row="2"
-                        Content="+ Notizbuch"
-                        Style="{StaticResource ModernButton}"
-                        Margin="8,8"
-                        Click="AddNotebook_Click"/>
-            </Grid>
+        <Button Grid.Row="2"
+       Content="+ Notizbuch"
+      Style="{StaticResource ModernButton}"
+          Margin="8,8"
+        Click="AddNotebook_Click"/>
+       </Grid>
 
             <!-- Splitter 1 -->
-            <GridSplitter x:Name="Splitter1" Grid.Column="1" Width="4" HorizontalAlignment="Stretch" Background="#3A3A55"/>
+     <GridSplitter x:Name="Splitter1" Grid.Column="1" Width="4" HorizontalAlignment="Stretch" Background="#3A3A55"/>
 
-            <!-- ===== SIDEBAR: KATEGORIEN ===== -->
-            <Grid x:Name="CategoryPanel" Grid.Column="2" Background="#252535">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="56"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+      <!-- ===== SIDEBAR: KATEGORIEN ===== -->
+  <Grid x:Name="CategoryPanel" Grid.Column="2" Background="#252535">
+    <Grid.RowDefinitions>
+   <RowDefinition Height="56"/>
+     <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+      </Grid.RowDefinitions>
 
-                <Border Grid.Row="0" Background="#252535" BorderBrush="#3A3A55" BorderThickness="0,0,0,1">
-                    <TextBlock x:Name="CategoryHeader"
-                               Text="📂 Kategorien"
-                               Foreground="#E0E0F0"
-                               FontSize="14" FontWeight="SemiBold"
-                               VerticalAlignment="Center"
-                               Margin="16,0"/>
-                </Border>
+       <Border Grid.Row="0" Background="#252535" BorderBrush="#3A3A55" BorderThickness="0,0,0,1">
+             <TextBlock x:Name="CategoryHeader"
+   Text="📂 Kategorien"
+      Foreground="#E0E0F0"
+     FontSize="14" FontWeight="SemiBold"
+     VerticalAlignment="Center"
+    Margin="16,0"/>
+    </Border>
 
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                    <TreeView x:Name="CategoryTree"
-                              Margin="8,8,8,0"
-                              SelectedItemChanged="CategoryTree_SelectedItemChanged"
-                              Background="Transparent"
-                              BorderThickness="0">
-                        <TreeView.Resources>
-                            <HierarchicalDataTemplate DataType="{x:Type models:Category}"
-                                                      ItemsSource="{Binding SubCategories}">
-                                <StackPanel Orientation="Horizontal" Margin="2,1">
-                                    <StackPanel.ContextMenu>
-                                        <ContextMenu>
-                                            <MenuItem Header="✏ Umbenennen" Tag="{Binding}" Click="RenameCategory_Click"/>
-                                            <Separator/>
-                                            <MenuItem Header="+ Neue Kategorie" Click="AddCategory_Click"/>
-                                            <MenuItem Header="+ Neue Unterkategorie" Tag="{Binding}" Click="AddSubCategory_Click"/>
-                                            <Separator/>
-                                            <MenuItem Header="🗑 Löschen" Tag="{Binding}" Click="DeleteCategory_Click"/>
-                                        </ContextMenu>
-                                    </StackPanel.ContextMenu>
-                                    <TextBlock Text="📁 " FontSize="12"/>
-                                    <TextBlock Text="{Binding Name}" FontSize="12" Foreground="#E0E0F0"/>
-                                </StackPanel>
-                            </HierarchicalDataTemplate>
-                        </TreeView.Resources>
-                    </TreeView>
-                </ScrollViewer>
+      <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+       <TreeView x:Name="CategoryTree"
+          Margin="8,8,8,0"
+      SelectedItemChanged="CategoryTree_SelectedItemChanged"
+    Background="Transparent"
+           BorderThickness="0">
+           <TreeView.Resources>
+               <HierarchicalDataTemplate DataType="{x:Type models:Category}"
+                 ItemsSource="{Binding SubCategories}">
+<StackPanel Orientation="Horizontal" Margin="2,1">
+    <StackPanel.ContextMenu>
+           <ContextMenu>
+        <MenuItem Header="✏ Umbenennen" Tag="{Binding}" Click="RenameCategory_Click"/>
+         <Separator/>
+         <MenuItem Header="+ Neue Kategorie" Click="AddCategory_Click"/>
+            <MenuItem Header="+ Neue Unterkategorie" Tag="{Binding}" Click="AddSubCategory_Click"/>
+         <Separator/>
+          <MenuItem Header="🗑 Löschen" Tag="{Binding}" Click="DeleteCategory_Click"/>
+   </ContextMenu>
+</StackPanel.ContextMenu>
+  <TextBlock Text="📁 " FontSize="12"/>
+     <TextBlock Text="{Binding Name}" FontSize="12" Foreground="#E0E0F0"/>
+      </StackPanel>
+</HierarchicalDataTemplate>
+               </TreeView.Resources>
+            </TreeView>
+      </ScrollViewer>
 
-                <StackPanel Grid.Row="2" Margin="8,4,8,8">
-                    <Button Content="+ Kategorie"
-                            Style="{StaticResource ModernButton}"
-                            Margin="0,2"
-                            Click="AddCategory_Click"/>
-                    <Button Content="+ Unterkategorie"
-                            Style="{StaticResource GhostButton}"
-                            Margin="0,2"
-                            Foreground="#9090B0"
-                            Click="AddSubCategory_Click"/>
-                </StackPanel>
-            </Grid>
+      <StackPanel Grid.Row="2" Margin="8,4,8,8">
+     <Button Content="+ Kategorie"
+   Style="{StaticResource ModernButton}"
+          Margin="0,2"
+       Click="AddCategory_Click"/>
+        <Button Content="+ Unterkategorie"
+  Style="{StaticResource GhostButton}"
+       Margin="0,2"
+        Foreground="#9090B0"
+      Click="AddSubCategory_Click"/>
+      </StackPanel>
+         </Grid>
 
-            <!-- Splitter 2 -->
-            <GridSplitter x:Name="Splitter2" Grid.Column="3" Width="4" HorizontalAlignment="Stretch" Background="#3A3A55"/>
+       <!-- Splitter 2 -->
+       <GridSplitter x:Name="Splitter2" Grid.Column="3" Width="4" HorizontalAlignment="Stretch" Background="#3A3A55"/>
 
-            <!-- ===== HAUPTBEREICH ===== -->
+   <!-- ===== HAUPTBEREICH ===== -->
             <Grid Grid.Column="4" Background="#1E1E2E">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="56"/>
-                    <RowDefinition Height="44"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+       <Grid.RowDefinitions>
+   <RowDefinition Height="56"/>
+<RowDefinition Height="44"/>
+            <RowDefinition Height="*"/>
+      </Grid.RowDefinitions>
 
-                <!-- Toolbar -->
+     <!-- Toolbar -->
                 <Border Grid.Row="0" Background="#252535" BorderBrush="#3A3A55" BorderThickness="0,0,0,1">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+     <Grid>
+          <Grid.ColumnDefinitions>
+  <ColumnDefinition Width="Auto"/>
+         <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
 
-                        <!-- Hamburger-Button (nur im Vollbild-Modus sichtbar) -->
-                        <Button x:Name="HamburgerButton"
-                                Grid.Column="0"
-                                Content="☰"
-                                FontSize="20"
-                                Foreground="#E0E0F0"
-                                Background="Transparent"
-                                BorderThickness="0"
-                                Width="48" Height="48"
-                                Cursor="Hand"
-                                Visibility="Collapsed"
-                                Click="HamburgerButton_Click"
-                                ToolTip="Notizbücher &amp; Kategorien anzeigen">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Background" Value="Transparent"/>
-                                    <Setter Property="BorderThickness" Value="0"/>
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border Background="{TemplateBinding Background}"
-                                                        CornerRadius="6"
-                                                        Padding="4">
-                                                    <ContentPresenter HorizontalAlignment="Center"
-                                                                      VerticalAlignment="Center"/>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#2E2E45"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
+              <!-- Hamburger-Button (nur im Vollbild-Modus sichtbar) -->
+ <Button x:Name="HamburgerButton"
+   Grid.Column="0"
+           Content="☰"
+     FontSize="20"
+        Foreground="#E0E0F0"
+         Background="Transparent"
+             BorderThickness="0"
+        Width="48" Height="48"
+      Cursor="Hand"
+ Visibility="Collapsed"
+         Click="HamburgerButton_Click"
+              ToolTip="Notizbücher &amp; Kategorien anzeigen">
+              <Button.Style>
+     <Style TargetType="Button">
+         <Setter Property="Background" Value="Transparent"/>
+               <Setter Property="BorderThickness" Value="0"/>
+         <Setter Property="Template">
+    <Setter.Value>
+           <ControlTemplate TargetType="Button">
+            <Border Background="{TemplateBinding Background}"
+          CornerRadius="6"
+                   Padding="4">
+    <ContentPresenter HorizontalAlignment="Center"
+       VerticalAlignment="Center"/>
+         </Border>
+ </ControlTemplate>
+           </Setter.Value>
+             </Setter>
+             <Style.Triggers>
+   <Trigger Property="IsMouseOver" Value="True">
+    <Setter Property="Background" Value="#2E2E45"/>
+     </Trigger>
+       </Style.Triggers>
+             </Style>
+       </Button.Style>
+ </Button>
 
-                        <!-- Toolbar-Inhalt -->
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0">
-                            <ToggleButton x:Name="PenTool"
-                                          Content="✏ Stift"
-                                          Checked="PenTool_Checked"
-                                          Unchecked="PenTool_Unchecked"
-                                          Margin="0,0,6,0"
-                                          Padding="10,6"
-                                          Cursor="Hand"
-                                          FontSize="13">
-                                <ToggleButton.Style>
-                                    <Style TargetType="ToggleButton">
-                                        <Setter Property="Background" Value="#2E2E45"/>
-                                        <Setter Property="Foreground" Value="#9090B0"/>
-                                        <Setter Property="BorderThickness" Value="0"/>
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="ToggleButton">
-                                                    <Border Background="{TemplateBinding Background}"
-                                                            CornerRadius="6"
-                                                            Padding="{TemplateBinding Padding}">
-                                                        <ContentPresenter HorizontalAlignment="Center"
-                                                                          VerticalAlignment="Center"/>
-                                                    </Border>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Style.Triggers>
-                                            <Trigger Property="IsChecked" Value="True">
-                                                <Setter Property="Background" Value="#7C6AF7"/>
-                                                <Setter Property="Foreground" Value="#E0E0F0"/>
-                                            </Trigger>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#3D3A6B"/>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </ToggleButton.Style>
-                            </ToggleButton>
+          <!-- Toolbar-Inhalt -->
+                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0">
+     <ToggleButton x:Name="PenTool"
+        Content="✏ Stift"
+              Checked="PenTool_Checked"
+   Unchecked="PenTool_Unchecked"
+        Margin="0,0,6,0"
+            Padding="10,6"
+   Cursor="Hand"
+    FontSize="13">
+      <ToggleButton.Style>
+   <Style TargetType="ToggleButton">
+               <Setter Property="Background" Value="#2E2E45"/>
+   <Setter Property="Foreground" Value="#9090B0"/>
+   <Setter Property="BorderThickness" Value="0"/>
+          <Setter Property="Template">
+         <Setter.Value>
+     <ControlTemplate TargetType="ToggleButton">
+            <Border Background="{TemplateBinding Background}"
+    CornerRadius="6"
+        Padding="{TemplateBinding Padding}">
+  <ContentPresenter HorizontalAlignment="Center"
+     VerticalAlignment="Center"/>
+      </Border>
+          </ControlTemplate>
+       </Setter.Value>
+          </Setter>
+                 <Style.Triggers>
+          <Trigger Property="IsChecked" Value="True">
+   <Setter Property="Background" Value="#7C6AF7"/>
+     <Setter Property="Foreground" Value="#E0E0F0"/>
+       </Trigger>
+     <Trigger Property="IsMouseOver" Value="True">
+ <Setter Property="Background" Value="#3D3A6B"/>
+             </Trigger>
+      </Style.Triggers>
+               </Style>
+     </ToggleButton.Style>
+          </ToggleButton>
 
-                            <ToggleButton x:Name="EraserTool"
-                                          Content="⬜ Radierer"
-                                          Checked="EraserTool_Checked"
-                                          Unchecked="EraserTool_Unchecked"
-                                          Margin="0,0,6,0"
-                                          Padding="10,6"
-                                          Cursor="Hand"
-                                          FontSize="13">
-                                <ToggleButton.Style>
-                                    <Style TargetType="ToggleButton">
-                                        <Setter Property="Background" Value="#2E2E45"/>
-                                        <Setter Property="Foreground" Value="#9090B0"/>
-                                        <Setter Property="BorderThickness" Value="0"/>
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="ToggleButton">
-                                                    <Border Background="{TemplateBinding Background}"
-                                                            CornerRadius="6"
-                                                            Padding="{TemplateBinding Padding}">
-                                                        <ContentPresenter HorizontalAlignment="Center"
-                                                                          VerticalAlignment="Center"/>
-                                                    </Border>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Style.Triggers>
-                                            <Trigger Property="IsChecked" Value="True">
-                                                <Setter Property="Background" Value="#7C6AF7"/>
-                                                <Setter Property="Foreground" Value="#E0E0F0"/>
-                                            </Trigger>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#3D3A6B"/>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </ToggleButton.Style>
-                            </ToggleButton>
+            <ToggleButton x:Name="EraserTool"
+    Content="⬜ Radierer"
+      Checked="EraserTool_Checked"
+    Unchecked="EraserTool_Unchecked"
+          Margin="0,0,6,0"
+      Padding="10,6"
+                  Cursor="Hand"
+              FontSize="13">
+      <ToggleButton.Style>
+        <Style TargetType="ToggleButton">
+        <Setter Property="Background" Value="#2E2E45"/>
+ <Setter Property="Foreground" Value="#9090B0"/>
+    <Setter Property="BorderThickness" Value="0"/>
+         <Setter Property="Template">
+           <Setter.Value>
+            <ControlTemplate TargetType="ToggleButton">
+      <Border Background="{TemplateBinding Background}"
+     CornerRadius="6"
+                 Padding="{TemplateBinding Padding}">
+               <ContentPresenter HorizontalAlignment="Center"
+       VerticalAlignment="Center"/>
+             </Border>
+        </ControlTemplate>
+             </Setter.Value>
+       </Setter>
+     <Style.Triggers>
+         <Trigger Property="IsChecked" Value="True">
+    <Setter Property="Background" Value="#7C6AF7"/>
+         <Setter Property="Foreground" Value="#E0E0F0"/>
+           </Trigger>
+             <Trigger Property="IsMouseOver" Value="True">
+    <Setter Property="Background" Value="#3D3A6B"/>
+          </Trigger>
+               </Style.Triggers>
+  </Style>
+    </ToggleButton.Style>
+           </ToggleButton>
 
-                            <!-- Stiftdicke -->
-                            <TextBlock Text="Dicke:" Foreground="#9090B0" FontSize="12"
-                                       VerticalAlignment="Center" Margin="8,0,4,0"/>
-                            <Slider x:Name="PenThickness"
-                                    Minimum="1" Maximum="20" Value="3"
-                                    Width="80" VerticalAlignment="Center"
-                                    Margin="0,0,8,0"
-                                    ValueChanged="PenThickness_ValueChanged"/>
+           <!-- Stiftdicke -->
+        <TextBlock Text="Dicke:" Foreground="#9090B0" FontSize="12"
+           VerticalAlignment="Center" Margin="8,0,4,0"/>
+   <Slider x:Name="PenThickness"
+          Minimum="1" Maximum="20" Value="3"
+  Width="80" VerticalAlignment="Center"
+          Margin="0,0,8,0"
+         ValueChanged="PenThickness_ValueChanged"/>
 
-                            <!-- Farbe -->
-                            <TextBlock Text="Farbe:" Foreground="#9090B0" FontSize="12"
-                                       VerticalAlignment="Center" Margin="0,0,4,0"/>
-                            <ItemsControl x:Name="ColorPicker" VerticalAlignment="Center" Margin="0,0,12,0">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel Orientation="Horizontal"/>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                            </ItemsControl>
+        <!-- Farbe -->
+      <TextBlock Text="Farbe:" Foreground="#9090B0" FontSize="12"
+           VerticalAlignment="Center" Margin="0,0,4,0"/>
+           <ItemsControl x:Name="ColorPicker" VerticalAlignment="Center" Margin="0,0,12,0">
+ <ItemsControl.ItemsPanel>
+      <ItemsPanelTemplate>
+                 <StackPanel Orientation="Horizontal"/>
+        </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+           </ItemsControl>
 
-                            <Separator Background="#3A3A55" Width="1" Margin="4,8"/>
+           <Separator Background="#3A3A55" Width="1" Margin="4,8"/>
 
-                            <Button Content="+ Seite"
-                                    Style="{StaticResource ModernButton}"
-                                    Margin="8,0,4,0"
-                                    Click="AddPage_Click"/>
-                            <Button Content="📄 PDF importieren"
-                                    Style="{StaticResource GhostButton}"
-                                    Margin="4,0"
-                                    Click="ImportPdf_Click"/>
-                            <Button Content="💾 Exportieren"
-                                    Style="{StaticResource GhostButton}"
-                                    Margin="4,0"
-                                    Click="ExportPdf_Click"/>
+              <Button Content="+ Seite"
+    Style="{StaticResource ModernButton}"
+   Margin="8,0,4,0"
+            Click="AddPage_Click"/>
+           <Button Content="📄 PDF importieren"
+      Style="{StaticResource GhostButton}"
+        Margin="4,0"
+            Click="ImportPdf_Click"/>
+                 <Button Content="💾 Exportieren"
+          Style="{StaticResource GhostButton}"
+       Margin="4,0"
+   Click="ExportPdf_Click"/>
 
-                            <Separator Background="#3A3A55" Width="1" Margin="4,8"/>
+                <Separator Background="#3A3A55" Width="1" Margin="4,8"/>
 
-                            <!-- Vollbild-Toggle-Button -->
-                            <Button x:Name="ToggleSidebarButton"
-                                    Content="◀◀ Ausblenden"
-                                    Style="{StaticResource GhostButton}"
-                                    Margin="4,0"
-                                    ToolTip="Seitenleisten ein-/ausblenden"
-                                    Click="ToggleSidebar_Click"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
+        <!-- Sidebar-Toggle -->
+     <Button x:Name="ToggleSidebarButton"
+         Content="◀◀ Ausblenden"
+       Style="{StaticResource GhostButton}"
+                  Margin="4,0"
+     ToolTip="Seitenleisten ein-/ausblenden"
+          Click="ToggleSidebar_Click"/>
+              </StackPanel>
+     </Grid>
+      </Border>
 
-                <!-- Page Tabs -->
-                <Border Grid.Row="1" Background="#252535" BorderBrush="#3A3A55" BorderThickness="0,0,0,1">
-                    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden">
-                        <StackPanel x:Name="PageTabPanel"
-                                    Orientation="Horizontal"
-                                    Margin="8,0"
-                                    VerticalAlignment="Center"/>
-                    </ScrollViewer>
-                </Border>
+        <!-- Page Tabs -->
+      <Border Grid.Row="1" Background="#252535" BorderBrush="#3A3A55" BorderThickness="0,0,0,1">
+          <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden">
+            <StackPanel x:Name="PageTabPanel"
+               Orientation="Horizontal"
+    Margin="8,0"
+          VerticalAlignment="Center"/>
+        </ScrollViewer>
+      </Border>
 
-                <!-- Canvas / Zeichenbereich -->
+ <!-- Canvas / Zeichenbereich -->
                 <Grid Grid.Row="2">
-                    <!-- Placeholder -->
-                    <StackPanel x:Name="PlaceholderPanel"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Center">
-                        <TextBlock Text="📓" FontSize="64" HorizontalAlignment="Center" Opacity="0.2"/>
-                        <TextBlock Text="Wähle ein Notizbuch und eine Kategorie aus"
-                                   Foreground="#9090B0" FontSize="16"
-                                   HorizontalAlignment="Center" Margin="0,12,0,0"/>
-                        <TextBlock Text="oder erstelle eine neue Seite"
-                                   Foreground="#3A3A55" FontSize="13"
-                                   HorizontalAlignment="Center" Margin="0,4,0,0"/>
-                    </StackPanel>
+  <!-- Placeholder -->
+      <StackPanel x:Name="PlaceholderPanel"
+    VerticalAlignment="Center"
+            HorizontalAlignment="Center">
+           <TextBlock Text="📓" FontSize="64" HorizontalAlignment="Center" Opacity="0.2"/>
+          <TextBlock Text="Wähle ein Notizbuch und eine Kategorie aus"
+      Foreground="#9090B0" FontSize="16"
+HorizontalAlignment="Center" Margin="0,12,0,0"/>
+      <TextBlock Text="oder erstelle eine neue Seite"
+                Foreground="#3A3A55" FontSize="13"
+           HorizontalAlignment="Center" Margin="0,4,0,0"/>
+           </StackPanel>
 
-                    <!-- Zeichenbereich: volle Breite -->
-                    <ScrollViewer x:Name="CanvasScroller"
-                                  HorizontalScrollBarVisibility="Disabled"
-                                  VerticalScrollBarVisibility="Auto"
-                                  Visibility="Collapsed"
-                                  Background="#2A2A3E"
-                                  SizeChanged="CanvasScroller_SizeChanged">
-                        <Grid x:Name="PageGrid" Margin="40">
-                            <!-- Seitenhintergrund: Breite bindet an ScrollViewer -->
-                            <Border x:Name="PageBorder"
-                                    Background="White"
-                                    MinHeight="400">
-                                <Border.Effect>
-                                    <DropShadowEffect Color="#000000" Opacity="0.4"
-                                                      BlurRadius="20" ShadowDepth="4"/>
-                                </Border.Effect>
-                            </Border>
+      <!-- Zeichenbereich: volle Breite, kein horizontales Scrollen -->
+                <ScrollViewer x:Name="CanvasScroller"
+         HorizontalScrollBarVisibility="Disabled"
+    VerticalScrollBarVisibility="Auto"
+     Visibility="Collapsed"
+                 Background="#2A2A3E"
+   SizeChanged="CanvasScroller_SizeChanged">
+  <Grid x:Name="PageGrid" Margin="40">
+  <!-- Seitenhintergrund -->
+               <Border x:Name="PageBorder"
+    Background="White"
+ MinHeight="400">
+              <Border.Effect>
+        <DropShadowEffect Color="#000000" Opacity="0.4"
+       BlurRadius="20" ShadowDepth="4"/>
+              </Border.Effect>
+     </Border>
 
-                            <!-- Linierter Hintergrund -->
-                            <Canvas x:Name="LineCanvas"
-                                    IsHitTestVisible="False"/>
+        <!-- Linierter Hintergrund -->
+          <Canvas x:Name="LineCanvas" IsHitTestVisible="False"/>
 
-                            <!-- InkCanvas für Handschrift: volle Breite -->
-                            <InkCanvas x:Name="MainInkCanvas"
-                                       Background="Transparent"
-                                       StrokeCollected="InkCanvas_StrokeCollected"
-                                       StrokeErased="InkCanvas_StrokeErased"/>
-                        </Grid>
-                    </ScrollViewer>
-                </Grid>
+            <!-- InkCanvas für Handschrift -->
+      <InkCanvas x:Name="MainInkCanvas"
+     Background="Transparent"
+       StrokeCollected="InkCanvas_StrokeCollected"
+     StrokeErased="InkCanvas_StrokeErased"/>
             </Grid>
+        </ScrollViewer>
+     </Grid>
+ </Grid>
         </Grid>
 
         <!-- ===== POPUP: Seitenleiste (Hamburger-Modus) ===== -->
         <Popup x:Name="SidebarPopup"
-               Placement="Left"
-               PlacementTarget="{Binding ElementName=HamburgerButton}"
-               StaysOpen="False"
-               AllowsTransparency="True">
-            <Border Background="#1E1E2E"
-                    BorderBrush="#3A3A55"
-                    BorderThickness="0,0,2,0"
-                    Width="440"
-                    Effect="{x:Null}">
-                <Border.Effect>
-                    <DropShadowEffect Color="#000000" Opacity="0.5" BlurRadius="16" ShadowDepth="4" Direction="0"/>
-                </Border.Effect>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="200"/>
-                        <ColumnDefinition Width="4"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
+   Placement="Bottom"
+       PlacementTarget="{Binding ElementName=HamburgerButton}"
+   StaysOpen="False"
+    AllowsTransparency="True">
+     <Border Background="#1E1E2E"
+  BorderBrush="#3A3A55"
+             BorderThickness="1"
+    Width="440">
+     <Border.Effect>
+   <DropShadowEffect Color="#000000" Opacity="0.5" BlurRadius="16" ShadowDepth="4"/>
+     </Border.Effect>
+         <Grid>
+        <Grid.ColumnDefinitions>
+           <ColumnDefinition Width="200"/>
+  <ColumnDefinition Width="4"/>
+   <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-                    <!-- Notizbücher im Popup -->
-                    <Grid Grid.Column="0" Background="#1E1E2E">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="56"/>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <Border Grid.Row="0" Background="#252535" BorderBrush="#3A3A55" BorderThickness="0,0,0,1">
-                            <TextBlock Text="📓 Notizbücher"
-                                       Foreground="#E0E0F0" FontSize="14" FontWeight="SemiBold"
-                                       VerticalAlignment="Center" Margin="16,0"/>
-                        </Border>
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                            <ItemsControl x:Name="PopupNotebookList" Margin="8,8,8,0">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border CornerRadius="6" Padding="10,8" Margin="0,2"
-                                                Cursor="Hand"
-                                                MouseLeftButtonDown="PopupNotebook_Click"
-                                                Tag="{Binding}">
-                                            <Border.Style>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="Background" Value="Transparent"/>
-                                                    <Style.Triggers>
-                                                        <Trigger Property="IsMouseOver" Value="True">
-                                                            <Setter Property="Background" Value="#2E2E45"/>
-                                                        </Trigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
-                                            <TextBlock Text="{Binding Name}"
-                                                       Foreground="#E0E0F0" FontSize="13"
-                                                       TextTrimming="CharacterEllipsis"
-                                                       VerticalAlignment="Center"/>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
-                        <Button Grid.Row="2" Content="+ Notizbuch"
-                                Style="{StaticResource ModernButton}"
-                                Margin="8,8"
-                                Click="AddNotebook_Click"/>
-                    </Grid>
+        <!-- Notizbücher im Popup -->
+         <Grid Grid.Column="0" Background="#1E1E2E">
+         <Grid.RowDefinitions>
+            <RowDefinition Height="48"/>
+    <RowDefinition Height="300"/>
+   <RowDefinition Height="Auto"/>
+           </Grid.RowDefinitions>
+        <Border Grid.Row="0" Background="#252535" BorderBrush="#3A3A55" BorderThickness="0,0,0,1">
+         <TextBlock Text="📓 Notizbücher"
+    Foreground="#E0E0F0" FontSize="13" FontWeight="SemiBold"
+    VerticalAlignment="Center" Margin="12,0"/>
+    </Border>
+   <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+         <ItemsControl x:Name="PopupNotebookList" Margin="8,8,8,0">
+  <ItemsControl.ItemTemplate>
+       <DataTemplate>
+            <Border CornerRadius="6" Padding="10,8" Margin="0,2"
+     Cursor="Hand"
+  MouseLeftButtonDown="PopupNotebook_Click"
+     Tag="{Binding}">
+              <Border.Style>
+           <Style TargetType="Border">
+           <Setter Property="Background" Value="Transparent"/>
+      <Style.Triggers>
+         <Trigger Property="IsMouseOver" Value="True">
+     <Setter Property="Background" Value="#2E2E45"/>
+             </Trigger>
+       </Style.Triggers>
+           </Style>
+         </Border.Style>
+         <TextBlock Text="{Binding Name}"
+  Foreground="#E0E0F0" FontSize="13"
+      TextTrimming="CharacterEllipsis"
+            VerticalAlignment="Center"/>
+           </Border>
+           </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+         </ItemsControl>
+  </ScrollViewer>
+           <Button Grid.Row="2" Content="+ Notizbuch"
+                Style="{StaticResource ModernButton}"
+             Margin="8,8"
+          Click="AddNotebook_Click"/>
+           </Grid>
 
-                    <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch" Background="#3A3A55"/>
+           <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch" Background="#3A3A55"/>
 
-                    <!-- Kategorien im Popup -->
-                    <Grid Grid.Column="2" Background="#252535">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="56"/>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <Border Grid.Row="0" Background="#252535" BorderBrush="#3A3A55" BorderThickness="0,0,0,1">
-                            <TextBlock Text="📂 Kategorien"
-                                       Foreground="#E0E0F0" FontSize="14" FontWeight="SemiBold"
-                                       VerticalAlignment="Center" Margin="16,0"/>
-                        </Border>
-                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                            <TreeView x:Name="PopupCategoryTree"
-                                      Margin="8,8,8,0"
-                                      SelectedItemChanged="PopupCategoryTree_SelectedItemChanged"
-                                      Background="Transparent"
-                                      BorderThickness="0">
-                                <TreeView.Resources>
-                                    <HierarchicalDataTemplate DataType="{x:Type models:Category}"
-                                                              ItemsSource="{Binding SubCategories}">
-                                        <StackPanel Orientation="Horizontal" Margin="2,1">
-                                            <TextBlock Text="📁 " FontSize="12"/>
-                                            <TextBlock Text="{Binding Name}" FontSize="12" Foreground="#E0E0F0"/>
-                                        </StackPanel>
-                                    </HierarchicalDataTemplate>
-                                </TreeView.Resources>
-                            </TreeView>
-                        </ScrollViewer>
-                        <StackPanel Grid.Row="2" Margin="8,4,8,8">
-                            <Button Content="+ Kategorie"
-                                    Style="{StaticResource ModernButton}"
-                                    Margin="0,2"
-                                    Click="AddCategory_Click"/>
-                            <Button Content="+ Unterkategorie"
-                                    Style="{StaticResource GhostButton}"
-                                    Margin="0,2" Foreground="#9090B0"
-                                    Click="AddSubCategory_Click"/>
-                        </StackPanel>
-                    </Grid>
-                </Grid>
+    <!-- Kategorien im Popup -->
+         <Grid Grid.Column="2" Background="#252535">
+    <Grid.RowDefinitions>
+   <RowDefinition Height="48"/>
+          <RowDefinition Height="300"/>
+     <RowDefinition Height="Auto"/>
+       </Grid.RowDefinitions>
+    <Border Grid.Row="0" Background="#252535" BorderBrush="#3A3A55" BorderThickness="0,0,0,1">
+      <TextBlock Text="📂 Kategorien"
+     Foreground="#E0E0F0" FontSize="13" FontWeight="SemiBold"
+       VerticalAlignment="Center" Margin="12,0"/>
+ </Border>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+           <TreeView x:Name="PopupCategoryTree"
+     Margin="8,8,8,0"
+        SelectedItemChanged="PopupCategoryTree_SelectedItemChanged"
+ Background="Transparent"
+     BorderThickness="0">
+   <TreeView.Resources>
+   <HierarchicalDataTemplate DataType="{x:Type models:Category}"
+      ItemsSource="{Binding SubCategories}">
+          <StackPanel Orientation="Horizontal" Margin="2,1">
+      <TextBlock Text="📁 " FontSize="12"/>
+        <TextBlock Text="{Binding Name}" FontSize="12" Foreground="#E0E0F0"/>
+   </StackPanel>
+      </HierarchicalDataTemplate>
+          </TreeView.Resources>
+   </TreeView>
+         </ScrollViewer>
+       <StackPanel Grid.Row="2" Margin="8,4,8,8">
+           <Button Content="+ Kategorie"
+        Style="{StaticResource ModernButton}"
+          Margin="0,2"
+         Click="AddCategory_Click"/>
+        <Button Content="+ Unterkategorie"
+          Style="{StaticResource GhostButton}"
+      Margin="0,2" Foreground="#9090B0"
+             Click="AddSubCategory_Click"/>
+   </StackPanel>
+       </Grid>
+         </Grid>
             </Border>
         </Popup>
 
     </Grid>
-
-        
-
-</Window> 
+</Window>
