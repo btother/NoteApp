@@ -13,7 +13,7 @@ using Microsoft.Win32;
 
 namespace NoteApp.Views {
     public partial class MainWindow : Window {
-        // ── State ──────────────────────────────────────────────────────────
+        // ── State ──────────────────────────────────────────────────────────────
         private List<Notebook> _notebooks = new();
         private Notebook? _activeNotebook;
         private Category? _activeCategory;
@@ -32,15 +32,17 @@ namespace NoteApp.Views {
 
         private System.Windows.Threading.DispatcherTimer? _autoSaveTimer;
 
-        // ── Constructor ────────────────────────────────────────────────────
+        // ── Constructor ────────────────────────────────────────────────────────
         public MainWindow() {
             InitializeComponent();
             PenTool.IsChecked = true;
+
             _dataDir = System.IO.Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 "NoteApp");
             _dataFile = System.IO.Path.Combine(_dataDir, "notebooks.json");
             Directory.CreateDirectory(_dataDir);
+
             BuildColorPalette();
             LoadData();
             StartAutoSaveTimer();
@@ -49,7 +51,7 @@ namespace NoteApp.Views {
             Loaded += (s, e) => UpdateCanvasSize();
         }
 
-        // ── Setup ──────────────────────────────────────────────────────────
+        // ── Setup ──────────────────────────────────────────────────────────────
         private void SetupInkCanvas() {
             var da = new DrawingAttributes {
                 Color = _penColor,
@@ -66,7 +68,8 @@ namespace NoteApp.Views {
             ColorPicker.Items.Clear();
             foreach (var c in PaletteColors) {
                 var btn = new Border {
-                    Width = 22, Height = 22,
+                    Width = 22,
+                    Height = 22,
                     CornerRadius = new CornerRadius(11),
                     Background = new SolidColorBrush(c),
                     Margin = new Thickness(2),
@@ -82,7 +85,10 @@ namespace NoteApp.Views {
             }
         }
 
-        // ── Data Persistence ───────────────────────────────────────────────
+        // ── Data Persistence ───────────────────────────────────────────────────
+        // JSON speichert NUR die Struktur (Notizbücher, Kategorien, Seiten-Metadaten).
+        // Strokes liegen ausschließlich in den ISF-Dateien neben den PDFs.
+
         private void LoadData() {
             if (!File.Exists(_dataFile)) return;
             try {
@@ -96,11 +102,12 @@ namespace NoteApp.Views {
         }
 
         private void SaveData() {
+            // Strokes sind NICHT in NotePage enthalten → JSON bleibt schlank
             var json = JsonConvert.SerializeObject(_notebooks, Formatting.Indented);
             File.WriteAllText(_dataFile, json);
         }
 
-        // ── Notebook Sidebar ───────────────────────────────────────────────
+        // ── Notebook Sidebar ───────────────────────────────────────────────────
         private void RefreshNotebookList() {
             NotebookList.ItemsSource = null;
             NotebookList.ItemsSource = _notebooks;
@@ -116,10 +123,7 @@ namespace NoteApp.Views {
             };
             if (folderDialog.ShowDialog() != true) return;
 
-            var nb = new Notebook {
-                Name = dlg.NewName,
-                SavePath = folderDialog.FolderName
-            };
+            var nb = new Notebook { Name = dlg.NewName, SavePath = folderDialog.FolderName };
             _notebooks.Add(nb);
             SaveData();
             RefreshNotebookList();
@@ -161,14 +165,14 @@ namespace NoteApp.Views {
             if (nb == null) return;
 
             var dialog = new OpenFolderDialog {
-                Title = $"Neuer Speicherpfad f\u00fcr \u2018{nb.Name}\u2019"
+                Title = $"Neuer Speicherpfad für \u2018{nb.Name}\u2019"
             };
             if (dialog.ShowDialog() != true) return;
 
             nb.SavePath = dialog.FolderName;
             SaveData();
             MessageBox.Show(
-                $"Speicherort ge\u00e4ndert:\n{nb.SavePath}",
+                $"Speicherort geändert:\n{nb.SavePath}",
                 "Gespeichert",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
@@ -179,8 +183,8 @@ namespace NoteApp.Views {
             if (nb == null) return;
 
             var result = MessageBox.Show(
-                $"Notizbuch \"{nb.Name}\" wirklich l\u00f6schen?\nDieser Vorgang kann nicht r\u00fcckg\u00e4ngig gemacht werden.",
-                "L\u00f6schen best\u00e4tigen",
+                $"Notizbuch \"{nb.Name}\" wirklich löschen?\nDieser Vorgang kann nicht rückgängig gemacht werden.",
+                "Löschen bestätigen",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
             if (result != MessageBoxResult.Yes) return;
@@ -200,9 +204,11 @@ namespace NoteApp.Views {
         private void RenameCategory_Click(object sender, RoutedEventArgs e) {
             var cat = GetCategoryFromSender(sender);
             if (cat == null) return;
+
             var dlg = new RenameDialog(cat.Name) { Owner = this };
             dlg.Title = "Kategorie umbenennen";
             if (dlg.ShowDialog() != true) return;
+
             cat.Name = dlg.NewName;
             SaveData();
             RefreshCategoryTree();
@@ -213,8 +219,8 @@ namespace NoteApp.Views {
             if (cat == null) return;
 
             var result = MessageBox.Show(
-                $"Kategorie \"{cat.Name}\" und alle Unterkategorien wirklich l\u00f6schen?",
-                "L\u00f6schen best\u00e4tigen",
+                $"Kategorie \"{cat.Name}\" und alle Unterkategorien wirklich löschen?",
+                "Löschen bestätigen",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
             if (result != MessageBoxResult.Yes) return;
@@ -246,7 +252,7 @@ namespace NoteApp.Views {
             return null;
         }
 
-        // ── Category Tree ──────────────────────────────────────────────────
+        // ── Category Tree ──────────────────────────────────────────────────────
         private void RefreshCategoryTree() {
             CategoryTree.Items.Clear();
             if (_activeNotebook == null) return;
@@ -265,16 +271,12 @@ namespace NoteApp.Views {
             };
             header.Children.Add(nameBlock);
 
-            var item = new TreeViewItem {
-                Header = header,
-                Tag = cat,
-                IsExpanded = true
-            };
+            var item = new TreeViewItem { Header = header, Tag = cat, IsExpanded = true };
 
             var cm = new ContextMenu();
             var renameItem = new MenuItem { Header = "Umbenennen" };
             renameItem.Click += (s, e) => RenameCategory(cat);
-            var deleteItem = new MenuItem { Header = "L\u00f6schen" };
+            var deleteItem = new MenuItem { Header = "Löschen" };
             deleteItem.Click += (s, e) => DeleteCategory(cat);
             cm.Items.Add(renameItem);
             cm.Items.Add(deleteItem);
@@ -282,6 +284,7 @@ namespace NoteApp.Views {
 
             foreach (var sub in cat.SubCategories)
                 item.Items.Add(BuildTreeItem(sub));
+
             return item;
         }
 
@@ -295,7 +298,7 @@ namespace NoteApp.Views {
 
         private void AddCategory_Click(object sender, RoutedEventArgs e) {
             if (_activeNotebook == null) {
-                MessageBox.Show("Bitte zuerst ein Notizbuch ausw\u00e4hlen.", "Hinweis",
+                MessageBox.Show("Bitte zuerst ein Notizbuch auswählen.", "Hinweis",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
@@ -303,6 +306,7 @@ namespace NoteApp.Views {
             var dlg = new RenameDialog("Neue Kategorie") { Owner = this };
             dlg.Title = "Kategorie erstellen";
             if (dlg.ShowDialog() != true) return;
+
             var cat = new Category { Name = dlg.NewName };
             _activeNotebook.Categories.Add(cat);
             SaveData();
@@ -316,7 +320,7 @@ namespace NoteApp.Views {
 
         private void AddSubCategory_Click(object sender, RoutedEventArgs e) {
             if (_activeCategory == null) {
-                MessageBox.Show("Bitte zuerst eine Kategorie ausw\u00e4hlen.", "Hinweis",
+                MessageBox.Show("Bitte zuerst eine Kategorie auswählen.", "Hinweis",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
@@ -324,6 +328,7 @@ namespace NoteApp.Views {
             var dlg = new RenameDialog("Neue Unterkategorie") { Owner = this };
             dlg.Title = "Unterkategorie erstellen";
             if (dlg.ShowDialog() != true) return;
+
             var sub = new Category { Name = dlg.NewName };
             _activeCategory.SubCategories.Add(sub);
             SaveData();
@@ -347,8 +352,8 @@ namespace NoteApp.Views {
         private void DeleteCategory(Category cat) {
             if (_activeNotebook == null) return;
             var result = MessageBox.Show(
-                $"Kategorie \"{cat.Name}\" wirklich l\u00f6schen?",
-                "L\u00f6schen best\u00e4tigen",
+                $"Kategorie \"{cat.Name}\" wirklich löschen?",
+                "Löschen bestätigen",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
             if (result == MessageBoxResult.Yes) {
@@ -368,15 +373,13 @@ namespace NoteApp.Views {
             return false;
         }
 
-        // ── Page Tabs ──────────────────────────────────────────────────────
+        // ── Page Tabs ──────────────────────────────────────────────────────────
         private void RefreshPageTabs() {
             PageTabPanel.Children.Clear();
             if (_activeCategory == null) return;
 
-            foreach (var page in _activeCategory.Pages) {
-                var tab = CreatePageTab(page);
-                PageTabPanel.Children.Add(tab);
-            }
+            foreach (var page in _activeCategory.Pages)
+                PageTabPanel.Children.Add(CreatePageTab(page));
 
             // FIX: Direkt LoadPage aufrufen statt SelectPage, um Rekursion zu vermeiden
             if (_activeCategory.Pages.Count > 0) {
@@ -423,7 +426,7 @@ namespace NoteApp.Views {
             var cm = new ContextMenu();
             var renameItem = new MenuItem { Header = "Umbenennen" };
             renameItem.Click += (s, e) => RenamePage(page);
-            var deleteItem = new MenuItem { Header = "L\u00f6schen" };
+            var deleteItem = new MenuItem { Header = "Löschen" };
             deleteItem.Click += (s, e) => DeletePage(page);
             cm.Items.Add(renameItem);
             cm.Items.Add(deleteItem);
@@ -435,13 +438,13 @@ namespace NoteApp.Views {
         private void SelectPage(NotePage page) {
             SaveCurrentPageStrokes();
             _activePage = page;
-            RefreshPageTabs(); // Tabs neu zeichnen (aktiver Tab wird hervorgehoben)
+            RefreshPageTabs();
             LoadPage(page);
         }
 
         private void AddPage_Click(object sender, RoutedEventArgs e) {
             if (_activeCategory == null) {
-                MessageBox.Show("Bitte zuerst eine Kategorie ausw\u00e4hlen.", "Hinweis",
+                MessageBox.Show("Bitte zuerst eine Kategorie auswählen.", "Hinweis",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
@@ -450,10 +453,16 @@ namespace NoteApp.Views {
                 Name = $"Seite {_activeCategory.Pages.Count + 1}",
                 Type = PageType.Lined
             };
+
             var pdfDir = System.IO.Path.Combine(_dataDir, "pages");
             Directory.CreateDirectory(pdfDir);
-            page.PdfPath = System.IO.Path.Combine(pdfDir, $"{Guid.NewGuid()}.pdf");
+
+            var guid = Guid.NewGuid().ToString();
+            page.PdfPath = System.IO.Path.Combine(pdfDir, $"{guid}.pdf");
+            page.IsfPath = System.IO.Path.Combine(pdfDir, $"{guid}.isf");
+
             PdfService.CreateLinedPage(page.PdfPath);
+
             _activeCategory.Pages.Add(page);
             SaveData();
             SelectPage(page);
@@ -461,7 +470,7 @@ namespace NoteApp.Views {
 
         private void ImportPdf_Click(object sender, RoutedEventArgs e) {
             if (_activeCategory == null) {
-                MessageBox.Show("Bitte zuerst eine Kategorie ausw\u00e4hlen.", "Hinweis",
+                MessageBox.Show("Bitte zuerst eine Kategorie auswählen.", "Hinweis",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
@@ -476,11 +485,16 @@ namespace NoteApp.Views {
             if (_activePage != null)
                 insertIndex = _activeCategory.Pages.IndexOf(_activePage) + 1;
 
+            var pdfDir = System.IO.Path.Combine(_dataDir, "pages");
+            Directory.CreateDirectory(pdfDir);
+
             var page = new NotePage {
                 Name = System.IO.Path.GetFileNameWithoutExtension(ofd.FileName),
                 Type = PageType.ExternalPdf,
-                PdfPath = ofd.FileName
+                PdfPath = ofd.FileName,
+                IsfPath = System.IO.Path.Combine(pdfDir, $"{Guid.NewGuid()}.isf")
             };
+
             _activeCategory.Pages.Insert(insertIndex, page);
             SaveData();
             RefreshPageTabs();
@@ -499,11 +513,14 @@ namespace NoteApp.Views {
         private void DeletePage(NotePage page) {
             if (_activeCategory == null) return;
             var result = MessageBox.Show(
-                $"Seite \"{page.Name}\" wirklich l\u00f6schen?",
-                "L\u00f6schen best\u00e4tigen",
+                $"Seite \"{page.Name}\" wirklich löschen?",
+                "Löschen bestätigen",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
             if (result == MessageBoxResult.Yes) {
+                // ISF-Datei mitlöschen
+                PdfService.DeleteStrokes(page);
+
                 _activeCategory.Pages.Remove(page);
                 if (_activePage == page) _activePage = null;
                 SaveData();
@@ -512,29 +529,20 @@ namespace NoteApp.Views {
             }
         }
 
-        // ── Canvas / Drawing ───────────────────────────────────────────────
+        // ── Canvas / Drawing ───────────────────────────────────────────────────
+
         private void LoadPage(NotePage page) {
             PlaceholderPanel.Visibility = Visibility.Collapsed;
             CanvasScroller.Visibility = Visibility.Visible;
 
-            // Gr\u00f6\u00dfe zuerst setzen, dann Linien zeichnen
             UpdateCanvasSize();
             DrawLinedBackground();
 
+            // Strokes aus ISF-Datei laden (nicht aus JSON)
             MainInkCanvas.Strokes.Clear();
-            foreach (var sd in page.Strokes) {
-                if (sd.Points.Count < 2) continue;
-                var pts = new StylusPointCollection(
-                    sd.Points.Select(p => new StylusPoint(p.X, p.Y)));
-                var da = new DrawingAttributes {
-                    Color = (Color)ColorConverter.ConvertFromString(sd.Color),
-                    Width = sd.Thickness,
-                    Height = sd.Thickness,
-                    FitToCurve = true
-                };
-                var stroke = new Stroke(pts, da);
+            var strokes = PdfService.LoadStrokes(page);
+            foreach (var stroke in strokes)
                 MainInkCanvas.Strokes.Add(stroke);
-            }
         }
 
         private void DrawLinedBackground() {
@@ -548,7 +556,6 @@ namespace NoteApp.Views {
             const double marginRight = 53;
             const double lineSpacing = 32;
 
-            // Roter Rand
             var redLine = new Line {
                 X1 = marginLeft, Y1 = marginTop,
                 X2 = marginLeft, Y2 = pageH - marginTop,
@@ -557,7 +564,6 @@ namespace NoteApp.Views {
             };
             LineCanvas.Children.Add(redLine);
 
-            // Blaue Linien
             double y = marginTop + lineSpacing;
             while (y < pageH - marginTop) {
                 var line = new Line {
@@ -579,19 +585,17 @@ namespace NoteApp.Views {
             _activePage = null;
         }
 
+        /// <summary>
+        /// Speichert die aktuellen Strokes als ISF-Datei.
+        /// Die JSON wird NUR für die Struktur (Metadaten) gespeichert.
+        /// </summary>
         private void SaveCurrentPageStrokes() {
             if (_activePage == null) return;
-            _activePage.Strokes.Clear();
-            foreach (var stroke in MainInkCanvas.Strokes) {
-                var sd = new StrokeData {
-                    Thickness = stroke.DrawingAttributes.Width,
-                    Color = stroke.DrawingAttributes.Color.ToString()
-                };
-                foreach (var pt in stroke.StylusPoints)
-                    sd.Points.Add(new PointData { X = pt.X, Y = pt.Y });
-                _activePage.Strokes.Add(sd);
-            }
 
+            // Strokes → ISF-Datei
+            PdfService.SaveStrokes(_activePage, MainInkCanvas.Strokes);
+
+            // JSON → nur Struktur (IsfPath wird mitgespeichert, Strokes-Liste entfällt)
             SaveData();
         }
 
@@ -601,7 +605,7 @@ namespace NoteApp.Views {
         private void InkCanvas_StrokeErased(object sender, RoutedEventArgs e)
             => SaveCurrentPageStrokes();
 
-        // ── Tools ──────────────────────────────────────────────────────────
+        // ── Tools ──────────────────────────────────────────────────────────────
         private void PenTool_Checked(object sender, RoutedEventArgs e) {
             EraserTool.IsChecked = false;
             _isErasing = false;
@@ -645,7 +649,7 @@ namespace NoteApp.Views {
             };
         }
 
-        // ── Auto-Save Timer ────────────────────────────────────────────────
+        // ── Auto-Save Timer ────────────────────────────────────────────────────
         private void StartAutoSaveTimer() {
             _autoSaveTimer = new System.Windows.Threading.DispatcherTimer();
             _autoSaveTimer.Interval = TimeSpan.FromMinutes(1);
@@ -654,7 +658,9 @@ namespace NoteApp.Views {
         }
 
         private void AutoSaveTimer_Tick(object? sender, EventArgs e) {
-            SaveCurrentPageStrokes(); // ← NEU: aktuelle Strokes in JSON schreiben
+            // Aktuelle Seite als ISF sichern
+            SaveCurrentPageStrokes();
+            // Alle Notizbücher als PDF exportieren (SavePath muss gesetzt sein)
             foreach (var notebook in _notebooks)
                 PdfService.AutoSaveNotebook(notebook);
         }
@@ -662,7 +668,7 @@ namespace NoteApp.Views {
         private void SetNotebookPath_Click(object sender, RoutedEventArgs e) {
             if (_activeNotebook == null) return;
             var dialog = new OpenFolderDialog {
-                Title = $"Speicherpfad f\u00fcr \u2018{_activeNotebook.Name}\u2019 w\u00e4hlen"
+                Title = $"Speicherpfad für \u2018{_activeNotebook.Name}\u2019 wählen"
             };
             if (dialog.ShowDialog() == true) {
                 _activeNotebook.SavePath = dialog.FolderName;
@@ -679,13 +685,14 @@ namespace NoteApp.Views {
             if (_activeNotebook == null) return;
             if (string.IsNullOrWhiteSpace(_activeNotebook.SavePath)) {
                 MessageBox.Show(
-                    "Bitte zuerst einen Speicherpfad f\u00fcr dieses Notizbuch festlegen.",
+                    "Bitte zuerst einen Speicherpfad für dieses Notizbuch festlegen.",
                     "Kein Pfad",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
                 return;
             }
 
+            SaveCurrentPageStrokes();
             PdfService.AutoSaveNotebook(_activeNotebook);
             MessageBox.Show(
                 "Alle Seiten wurden gespeichert!",
@@ -694,21 +701,23 @@ namespace NoteApp.Views {
                 MessageBoxImage.Information);
         }
 
-        // ── Export ─────────────────────────────────────────────────────────
+        // ── Export ─────────────────────────────────────────────────────────────
         private void ExportPdf_Click(object sender, RoutedEventArgs e) {
             if (_activePage == null) {
-                MessageBox.Show("Keine Seite ausgew\u00e4hlt.", "Hinweis",
+                MessageBox.Show("Keine Seite ausgewählt.", "Hinweis",
                     MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
             SaveCurrentPageStrokes();
+
             var sfd = new SaveFileDialog {
                 Filter = "PDF-Dateien (*.pdf)|*.pdf",
                 FileName = _activePage.Name + ".pdf",
                 Title = "Seite exportieren"
             };
             if (sfd.ShowDialog() != true) return;
+
             try {
                 PdfService.ExportPageWithStrokes(_activePage, sfd.FileName);
                 MessageBox.Show(
@@ -726,15 +735,15 @@ namespace NoteApp.Views {
             }
         }
 
-        // ── Window Close ───────────────────────────────────────────────────
+        // ── Window Close ───────────────────────────────────────────────────────
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e) {
             SaveCurrentPageStrokes();
             base.OnClosing(e);
         }
 
-        // ═══════════════════════════════════════════════════════════════════
+        // ═══════════════════════════════════════════════════════════════════════
         // SIDEBAR-TOGGLE & HAMBURGER-POPUP
-        // ═══════════════════════════════════════════════════════════════════
+        // ═══════════════════════════════════════════════════════════════════════
 
         private bool _sidebarVisible = true;
 
@@ -747,12 +756,9 @@ namespace NoteApp.Views {
             if (visible) {
                 ColNotebooks.MinWidth = 150;
                 ColNotebooks.Width = new GridLength(200);
-                
                 ColSplitter1.Width = new GridLength(4);
-                
                 ColCategories.MinWidth = 150;
                 ColCategories.Width = new GridLength(220);
-                
                 ColSplitter2.Width = new GridLength(4);
 
                 NotebookPanel.Visibility = Visibility.Visible;
@@ -788,35 +794,30 @@ namespace NoteApp.Views {
             PopupCategoryTree.Items.Clear();
             foreach (TreeViewItem item in CategoryTree.Items)
                 PopupCategoryTree.Items.Add(BuildPopupTreeItem(item));
+
             SidebarPopup.IsOpen = !SidebarPopup.IsOpen;
         }
 
-        private TreeViewItem BuildPopupTreeItem(TreeViewItem original)
-        {
+        private TreeViewItem BuildPopupTreeItem(TreeViewItem original) {
             var cat = original.Tag as Category;
 
-            // ✅ FIX: Neuen Header aufbauen statt original.Header wiederverwenden
             var header = new StackPanel { Orientation = Orientation.Horizontal };
             header.Children.Add(new TextBlock { Text = "📁 ", FontSize = 12 });
-            header.Children.Add(new TextBlock
-            {
+            header.Children.Add(new TextBlock {
                 Text = cat?.Name ?? "?",
                 FontSize = 12,
                 Foreground = new SolidColorBrush(Color.FromRgb(0xE0, 0xE0, 0xF0)),
                 VerticalAlignment = VerticalAlignment.Center
             });
 
-            var copy = new TreeViewItem
-            {
-                Header = header,   // ← frisch erstellt, kein Konflikt
+            var copy = new TreeViewItem {
+                Header = header,
                 Tag = original.Tag,
                 IsExpanded = true
             };
 
-            copy.MouseLeftButtonUp += (s, e) =>
-            {
-                if (copy.Tag is Category c)
-                {
+            copy.MouseLeftButtonUp += (s, e) => {
+                if (copy.Tag is Category c) {
                     _activeCategory = c;
                     RefreshPageTabs();
                     SidebarPopup.IsOpen = false;
@@ -843,21 +844,17 @@ namespace NoteApp.Views {
             // Wird durch BuildPopupTreeItem's MouseLeftButtonUp behandelt
         }
 
-        // ═══════════════════════════════════════════════════════════════════
-        // VOLLE BREITE: Canvas passt sich der verf\u00fcgbaren Breite an
-        // ═══════════════════════════════════════════════════════════════════
+        // ═══════════════════════════════════════════════════════════════════════
+        // VOLLE BREITE: Canvas passt sich der verfügbaren Breite an
+        // ═══════════════════════════════════════════════════════════════════════
 
-        private void CanvasScroller_SizeChanged(object sender, SizeChangedEventArgs e) {
-            UpdateCanvasSize();
-        }
+        private void CanvasScroller_SizeChanged(object sender, SizeChangedEventArgs e)
+            => UpdateCanvasSize();
 
         private void UpdateCanvasSize() {
             if (CanvasScroller.ActualWidth <= 0) return;
 
-            // Verf\u00fcgbare Breite minus Margin (2 x 40 px aus PageGrid Margin="40")
             double availableWidth = Math.Max(200, CanvasScroller.ActualWidth - 80);
-
-            // DIN-A4-Seitenverh\u00e4ltnis: 794 x 1123 px
             double pageHeight = availableWidth * (1123.0 / 794.0);
 
             PageBorder.Width = availableWidth;
@@ -867,7 +864,6 @@ namespace NoteApp.Views {
             MainInkCanvas.Width = availableWidth;
             MainInkCanvas.Height = pageHeight;
 
-            // Linien neu zeichnen wenn Canvas sichtbar
             if (CanvasScroller.Visibility == Visibility.Visible)
                 DrawLinedBackground();
         }
