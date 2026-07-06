@@ -340,14 +340,104 @@
       </Border>
 
         <!-- Page Tabs -->
-      <Border Grid.Row="1" Background="#252535" BorderBrush="#3A3A55" BorderThickness="0,0,0,1">
-          <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Hidden">
+      <!-- Document Tabs + Seitennavigation -->
+<Border Grid.Row="1" Background="#252535" BorderBrush="#3A3A55" BorderThickness="0,0,0,1">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Dokument-Tabs (Unterkategorien) -->
+        <ScrollViewer Grid.Column="0"
+                      HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Hidden">
             <StackPanel x:Name="PageTabPanel"
-               Orientation="Horizontal"
-    Margin="8,0"
-          VerticalAlignment="Center"/>
+                        Orientation="Horizontal"
+                        Margin="8,0"
+                        VerticalAlignment="Center"/>
         </ScrollViewer>
-      </Border>
+
+        <!-- Seitennavigation rechts -->
+        <StackPanel Grid.Column="1"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Center"
+                    Margin="8,0">
+            <Button Content="◀"
+                    Width="28" Height="28"
+                    Margin="2,0"
+                    FontSize="12"
+                    Cursor="Hand"
+                    Click="PrevPage_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Background" Value="#2E2E45"/>
+                        <Setter Property="Foreground" Value="#E0E0F0"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}"
+                                            CornerRadius="4"
+                                            Padding="4">
+                                        <ContentPresenter HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#3D3A6B"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+
+            <TextBlock x:Name="PageIndicatorText"
+                       Text="Seite 1 / 1"
+                       Foreground="#9090B0"
+                       FontSize="12"
+                       VerticalAlignment="Center"
+                       Margin="6,0"
+                       MinWidth="70"
+                       TextAlignment="Center"/>
+
+            <Button Content="▶"
+                    Width="28" Height="28"
+                    Margin="2,0"
+                    FontSize="12"
+                    Cursor="Hand"
+                    Click="NextPage_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Background" Value="#2E2E45"/>
+                        <Setter Property="Foreground" Value="#E0E0F0"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}"
+                                            CornerRadius="4"
+                                            Padding="4">
+                                        <ContentPresenter HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#3D3A6B"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Border>
 
  <!-- Canvas / Zeichenbereich -->
                 <Grid Grid.Row="2">
